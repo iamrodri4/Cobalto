@@ -1,0 +1,251 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="Content-Security-Policy"
+        content="default-src 'self'; script-src 'self' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; worker-src 'self' blob:; connect-src 'self'">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Cobalto</title>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" data-name="vs/editor/editor.main"
+        href="../node_modules/monaco-editor/min/vs/editor/editor.main.css">
+</head>
+<body>
+
+  <!-- Íconos y logo (dibujados a mano, propios de Cobalto) -->
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+    <defs>
+      <linearGradient id="cobalt-grad" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0" stop-color="#7cc0ff"/>
+        <stop offset="1" stop-color="#2a68ee"/>
+      </linearGradient>
+    </defs>
+    <symbol id="logo" viewBox="0 0 64 64">
+      <path d="M32 4 57 18v28L32 60 7 46V18z" fill="url(#cobalt-grad)"/>
+      <path d="M38 24 28 32l10 8" fill="none" stroke="#0c0d10" stroke-width="5"
+            stroke-linecap="round" stroke-linejoin="round"/>
+    </symbol>
+    <symbol id="i-files" viewBox="0 0 24 24">
+      <path d="M8.5 3h6.5l4 4v11.5a1.5 1.5 0 0 1-1.5 1.5h-9A1.5 1.5 0 0 1 7 18.5v-14A1.5 1.5 0 0 1 8.5 3z"/>
+      <path d="M15 3v4h4"/><path d="M4 7.5V20a1 1 0 0 0 1 1h9.5"/>
+    </symbol>
+    <symbol id="i-search" viewBox="0 0 24 24">
+      <circle cx="10.5" cy="10.5" r="6"/><path d="m15 15 5.5 5.5"/>
+    </symbol>
+    <symbol id="i-run" viewBox="0 0 24 24"><path d="M7.5 4.5v15l12-7.5z"/></symbol>
+    <symbol id="i-terminal" viewBox="0 0 24 24">
+      <rect x="3.5" y="4.5" width="17" height="15" rx="2"/><path d="m8 10 3 2.5L8 15M13 15h3.5"/>
+    </symbol>
+    <symbol id="i-info" viewBox="0 0 24 24">
+      <circle cx="12" cy="12" r="9"/><path d="M12 11v5.5"/>
+      <circle cx="12" cy="7.9" r=".7" fill="currentColor"/>
+    </symbol>
+    <symbol id="i-sidebar" viewBox="0 0 24 24">
+      <rect x="3.5" y="4.5" width="17" height="15" rx="2"/><path d="M9.5 4.5v15"/>
+    </symbol>
+    <symbol id="i-panel" viewBox="0 0 24 24">
+      <rect x="3.5" y="4.5" width="17" height="15" rx="2"/><path d="M3.5 14.5h17"/>
+    </symbol>
+    <symbol id="i-stop" viewBox="0 0 24 24"><rect x="6.5" y="6.5" width="11" height="11" rx="1.5"/></symbol>
+    <symbol id="i-trash" viewBox="0 0 24 24">
+      <path d="M5 7h14M10 7V5h4v2M7 7l1 12h8l1-12"/>
+    </symbol>
+    <symbol id="i-restart" viewBox="0 0 24 24">
+      <path d="M19 12a7 7 0 1 1-2.1-5"/><path d="M19 4.5V8h-3.5"/>
+    </symbol>
+    <symbol id="i-close" viewBox="0 0 24 24"><path d="M6.5 6.5l11 11M17.5 6.5l-11 11"/></symbol>
+    <symbol id="i-chevron" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></symbol>
+    <symbol id="i-newfile" viewBox="0 0 24 24">
+      <path d="M13 3.5H7.5A1.5 1.5 0 0 0 6 5v14a1.5 1.5 0 0 0 1.5 1.5h9A1.5 1.5 0 0 0 18 19V8.5z"/>
+      <path d="M13 3.5v5h5"/><path d="M12 12v5M9.5 14.5h5"/>
+    </symbol>
+  </svg>
+
+  <div id="app">
+
+    <!-- Barra de título -->
+    <header id="titlebar">
+      <div class="tb-left">
+        <svg class="logo-sm" aria-hidden="true"><use href="#logo"/></svg>
+        <nav id="menubar" aria-label="Menú"></nav>
+      </div>
+      <button id="cmd-pill" class="pill" title="Paleta de comandos (F1)">
+        <svg class="ico ico-sm" aria-hidden="true"><use href="#i-search"/></svg>
+        <span id="pill-text">Cobalto</span>
+      </button>
+      <div class="tb-right">
+        <button id="btn-toggle-sidebar" class="icon-btn" title="Barra lateral (Ctrl+B)">
+          <svg class="ico" aria-hidden="true"><use href="#i-sidebar"/></svg>
+        </button>
+        <button id="btn-toggle-panel" class="icon-btn" title="Panel de abajo (Ctrl+J)">
+          <svg class="ico" aria-hidden="true"><use href="#i-panel"/></svg>
+        </button>
+      </div>
+    </header>
+
+    <div id="body">
+
+      <!-- Barra de íconos -->
+      <aside id="activitybar">
+        <div class="ab-group">
+          <button class="ab-btn active" id="ab-files" title="Explorador (Ctrl+B)">
+            <svg class="ico" aria-hidden="true"><use href="#i-files"/></svg>
+          </button>
+          <button class="ab-btn" id="ab-search" title="Buscar en la carpeta (Ctrl+Shift+F)">
+            <svg class="ico" aria-hidden="true"><use href="#i-search"/></svg>
+          </button>
+          <button class="ab-btn" id="ab-run" title="Ejecutar (F5)">
+            <svg class="ico" aria-hidden="true"><use href="#i-run"/></svg>
+          </button>
+          <button class="ab-btn" id="ab-term" title="Terminal (Ctrl+Ñ)">
+            <svg class="ico" aria-hidden="true"><use href="#i-terminal"/></svg>
+          </button>
+        </div>
+        <div class="ab-group">
+          <button class="ab-btn" id="ab-about" title="Acerca de Cobalto">
+            <svg class="ico" aria-hidden="true"><use href="#i-info"/></svg>
+          </button>
+        </div>
+      </aside>
+
+      <!-- Barra lateral: explorador o búsqueda -->
+      <aside id="sidebar">
+
+        <div id="view-files">
+          <div class="sb-head">
+            <span>EXPLORADOR</span>
+            <span class="sb-actions">
+              <button class="icon-btn small" id="sb-newfile" title="Archivo nuevo (Ctrl+N)">
+                <svg class="ico" aria-hidden="true"><use href="#i-newfile"/></svg>
+              </button>
+              <button class="icon-btn small" id="sb-closefolder" title="Cerrar carpeta" hidden>
+                <svg class="ico" aria-hidden="true"><use href="#i-close"/></svg>
+              </button>
+            </span>
+          </div>
+          <div id="folder-label" hidden></div>
+          <div id="tree"></div>
+          <div id="tree-empty">
+            <p>Todavía no abres ninguna carpeta.</p>
+            <button class="btn primary" id="empty-open-folder">Abrir carpeta</button>
+            <button class="btn" id="empty-open-file">Abrir archivo</button>
+          </div>
+        </div>
+
+        <div id="view-search" hidden>
+          <div class="sb-head"><span>BUSCAR EN LA CARPETA</span></div>
+          <form id="search-form" autocomplete="off">
+            <input id="search-input" type="text" spellcheck="false" placeholder="Buscar…">
+            <label class="chk"><input type="checkbox" id="search-case"> Distinguir mayúsculas</label>
+          </form>
+          <div id="search-info">Escribe algo y presiona Enter.</div>
+          <div id="search-results"></div>
+        </div>
+
+      </aside>
+      <div id="sb-resizer" title="Arrastra para cambiar el ancho"></div>
+
+      <!-- Zona central -->
+      <main id="workbench">
+        <div id="tabs" role="tablist"></div>
+
+        <div id="editor-wrap">
+          <div id="editor"></div>
+
+          <div id="welcome">
+            <svg class="welcome-logo" aria-hidden="true"><use href="#logo"/></svg>
+            <ul class="shortcuts">
+              <li data-act="newFile"><span>Archivo nuevo</span><span class="keys"><kbd>Ctrl</kbd>+<kbd>N</kbd></span></li>
+              <li data-act="openFile"><span>Abrir archivo</span><span class="keys"><kbd>Ctrl</kbd>+<kbd>O</kbd></span></li>
+              <li data-act="openFolder"><span>Abrir carpeta</span><span class="keys"><kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>O</kbd></span></li>
+              <li data-act="search"><span>Buscar en la carpeta</span><span class="keys"><kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>F</kbd></span></li>
+              <li data-act="terminal"><span>Terminal</span><span class="keys"><kbd>Ctrl</kbd>+<kbd>Ñ</kbd></span></li>
+              <li data-act="palette"><span>Todos los comandos</span><span class="keys"><kbd>F1</kbd></span></li>
+              <li data-act="run"><span>Ejecutar</span><span class="keys"><kbd>F5</kbd></span></li>
+            </ul>
+            <p id="fatal" hidden></p>
+          </div>
+        </div>
+
+        <div id="panel-resizer" title="Arrastra para cambiar el alto"></div>
+
+        <!-- Panel de abajo: salida y terminal -->
+        <section id="panel">
+          <div class="panel-head">
+            <span class="panel-tabs">
+              <button class="ptab active" id="ptab-out">SALIDA</button>
+              <button class="ptab" id="ptab-term">TERMINAL</button>
+            </span>
+            <span class="panel-actions">
+              <button class="icon-btn small" id="btn-run" title="Ejecutar (F5)">
+                <svg class="ico" aria-hidden="true"><use href="#i-run"/></svg>
+              </button>
+              <button class="icon-btn small" id="btn-stop" title="Detener (Shift+F5)" disabled>
+                <svg class="ico" aria-hidden="true"><use href="#i-stop"/></svg>
+              </button>
+              <button class="icon-btn small" id="btn-term-restart" title="Reiniciar la terminal" hidden>
+                <svg class="ico" aria-hidden="true"><use href="#i-restart"/></svg>
+              </button>
+              <button class="icon-btn small" id="btn-clear" title="Limpiar">
+                <svg class="ico" aria-hidden="true"><use href="#i-trash"/></svg>
+              </button>
+              <button class="icon-btn small" id="btn-close-panel" title="Cerrar panel (Ctrl+J)">
+                <svg class="ico" aria-hidden="true"><use href="#i-close"/></svg>
+              </button>
+            </span>
+          </div>
+
+          <div class="pane" id="pane-out">
+            <pre id="output"></pre>
+            <form id="input-row" autocomplete="off">
+              <span class="prompt">›</span>
+              <input id="stdin" type="text" spellcheck="false"
+                     placeholder="Si tu programa pide algo con input(), escríbelo aquí y presiona Enter">
+            </form>
+          </div>
+
+          <div class="pane" id="pane-term" hidden>
+            <pre id="term-output"></pre>
+            <form id="term-row" autocomplete="off">
+              <span class="prompt">$</span>
+              <input id="term-input" type="text" spellcheck="false"
+                     placeholder="Escribe un comando (por ejemplo: dir) y presiona Enter">
+            </form>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <!-- Barra de estado -->
+    <footer id="statusbar">
+      <div class="st-left">
+        <span class="st-item" id="st-run"><i class="dot"></i><span id="st-run-text">Listo</span></span>
+      </div>
+      <div class="st-right">
+        <span class="st-item st-click" id="st-auto" title="Clic para activar o desactivar el autoguardado">Autoguardado: no</span>
+        <span class="st-item" id="st-pos">Ln 1, Col 1</span>
+        <span class="st-item">Espacios: 4</span>
+        <span class="st-item">UTF-8</span>
+        <span class="st-item" id="st-lang">Python</span>
+      </div>
+    </footer>
+  </div>
+
+  <div id="toast" role="status"></div>
+
+  <div id="modal" hidden>
+    <div class="modal-card">
+      <svg class="modal-logo" aria-hidden="true"><use href="#logo"/></svg>
+      <h2>Cobalto</h2>
+      <p class="muted">Versión 0.2.0</p>
+      <p>Un editor de código oscuro y liviano para escribir y ejecutar Python y JavaScript.</p>
+      <p class="muted small">El editor usa Monaco (licencia MIT), el mismo motor de texto que usa VS Code.
+        Cobalto no es un producto de Microsoft.</p>
+      <button class="btn primary" id="modal-close">Cerrar</button>
+    </div>
+  </div>
+
+  <script src="../node_modules/monaco-editor/min/vs/loader.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

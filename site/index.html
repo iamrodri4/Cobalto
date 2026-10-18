@@ -1,0 +1,394 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Cobalto — editor de código para Windows</title>
+  <meta name="description" content="Cobalto es un editor de código oscuro y liviano para Windows. Escribe y ejecuta Python y JavaScript, con terminal, temas de color y búsqueda en tu carpeta. Gratis y de código abierto.">
+  <meta name="theme-color" content="#0c0d10">
+  <meta property="og:title" content="Cobalto — editor de código para Windows">
+  <meta property="og:description" content="Escribe y ejecuta Python y JavaScript en un editor oscuro, liviano y de código abierto.">
+  <meta property="og:type" content="website">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%237cc0ff'/%3E%3Cstop offset='1' stop-color='%232a68ee'/%3E%3C/linearGradient%3E%3C/defs%3E%3Cpath d='M32 4 57 18v28L32 60 7 46V18z' fill='url(%23g)'/%3E%3Cpath d='M38 24 28 32l10 8' fill='none' stroke='%230c0d10' stroke-width='5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #0c0d10;
+      --surface: #121317;
+      --card: #171920;
+      --line: #23262e;
+      --text: #d4d7de;
+      --dim: #8a8f9c;
+      --accent: #3d9bff;
+      --accent-2: #7cc0ff;
+      --ok: #6fd08c;
+      --sans: "Segoe UI", system-ui, -apple-system, "Helvetica Neue", Arial, sans-serif;
+      --mono: "Cascadia Code", "JetBrains Mono", Consolas, "Courier New", monospace;
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0; background: var(--bg); color: var(--text);
+      font: 16px/1.6 var(--sans); -webkit-font-smoothing: antialiased;
+    }
+    a { color: var(--accent-2); }
+    .wrap { width: min(1080px, 100% - 32px); margin-inline: auto; }
+
+    /* barra superior */
+    header.top { padding: 18px 0; }
+    header.top .wrap { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+    .brand { display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 18px; color: var(--text); text-decoration: none; }
+    .brand svg { width: 28px; height: 28px; }
+    nav.links { display: flex; gap: 22px; font-size: 14.5px; }
+    nav.links a { color: var(--dim); text-decoration: none; }
+    nav.links a:hover { color: var(--text); }
+
+    /* portada */
+    .hero { padding: 56px 0 72px; }
+    .hero .wrap { display: grid; grid-template-columns: 1.05fr 1fr; gap: 48px; align-items: center; }
+    .eyebrow {
+      display: inline-block; margin-bottom: 18px; padding: 4px 12px;
+      border: 1px solid var(--line); border-radius: 999px;
+      color: var(--dim); font-size: 13px;
+    }
+    h1 { margin: 0 0 18px; font-size: clamp(34px, 5.4vw, 56px); line-height: 1.08; letter-spacing: -0.02em; }
+    h1 span { background: linear-gradient(120deg, var(--accent-2), #2a68ee); -webkit-background-clip: text; background-clip: text; color: transparent; }
+    .lead { margin: 0 0 28px; color: var(--dim); font-size: 18px; max-width: 34em; }
+    .cta { display: flex; flex-wrap: wrap; align-items: center; gap: 14px; }
+    .btn {
+      display: inline-flex; align-items: center; gap: 10px;
+      padding: 13px 22px; border-radius: 10px; border: 1px solid transparent;
+      font: 600 16px var(--sans); text-decoration: none; cursor: pointer;
+    }
+    .btn.primary { background: var(--accent); color: #06101f; }
+    .btn.primary:hover { filter: brightness(1.1); }
+    .btn.primary[aria-disabled="true"] { background: var(--card); color: var(--dim); border-color: var(--line); cursor: default; filter: none; }
+    .btn.ghost { color: var(--text); border-color: var(--line); background: transparent; }
+    .btn.ghost:hover { background: var(--card); }
+    .meta { margin: 14px 0 0; color: var(--dim); font-size: 13.5px; }
+
+    /* ilustración de la app */
+    .mock {
+      border: 1px solid var(--line); border-radius: 14px; overflow: hidden;
+      background: var(--surface); box-shadow: 0 30px 80px rgba(0, 0, 0, .55), 0 0 0 1px #ffffff05 inset;
+    }
+    .mock .bar { height: 34px; display: flex; align-items: center; gap: 10px; padding: 0 12px; background: #0c0d10; }
+    .mock .bar svg { width: 16px; height: 16px; }
+    .mock .bar i { width: 7px; height: 7px; border-radius: 50%; background: #2a2d36; }
+    .mock .pill { margin-inline: auto; padding: 2px 40px; border-radius: 7px; background: var(--card); border: 1px solid var(--line); color: var(--dim); font-size: 11px; }
+    .mock .body { display: grid; grid-template-columns: 38px 1fr; }
+    .mock .rail { background: #0c0d10; display: flex; flex-direction: column; align-items: center; gap: 14px; padding-top: 12px; }
+    .mock .rail b { width: 15px; height: 15px; border: 1.6px solid #50555f; border-radius: 4px; }
+    .mock .rail b:first-child { border-color: var(--accent-2); }
+    .mock .tabs { display: flex; background: #0f1014; border-bottom: 1px solid var(--line); font-size: 11.5px; color: var(--dim); }
+    .mock .tabs span { padding: 9px 16px; border-right: 1px solid var(--line); }
+    .mock .tabs span.on { background: var(--surface); color: var(--text); box-shadow: inset 0 2px 0 var(--accent); }
+    .mock pre { margin: 0; padding: 14px 16px 16px; font: 12.5px/1.75 var(--mono); color: #d4d7de; overflow: hidden; }
+    .mock .n { display: inline-block; width: 22px; color: #454955; user-select: none; }
+    .c { color: #5d6472; font-style: italic; } .k { color: #c792ea; } .s { color: #a5e075; } .f { color: #82aaff; }
+    .mock .out { border-top: 1px solid var(--line); padding: 10px 16px 12px; font: 12px/1.7 var(--mono); color: var(--dim); }
+    .mock .out em { font-style: normal; color: var(--accent-2); } .mock .out strong { font-weight: 400; color: var(--ok); }
+    .caption { margin: 10px 4px 0; color: #5d6472; font-size: 12px; text-align: center; }
+
+    /* secciones */
+    section { padding: 64px 0; border-top: 1px solid var(--line); }
+    h2 { margin: 0 0 10px; font-size: clamp(26px, 3.6vw, 36px); letter-spacing: -0.015em; }
+    .sub { margin: 0 0 36px; color: var(--dim); max-width: 40em; }
+    .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+    .card { padding: 22px; background: var(--card); border: 1px solid var(--line); border-radius: 14px; }
+    .card h3 { margin: 0 0 6px; font-size: 17px; }
+    .card p { margin: 0; color: var(--dim); font-size: 15px; }
+    .card .ico { width: 36px; height: 36px; margin-bottom: 14px; display: grid; place-items: center; border-radius: 10px; background: #1f2a3f; color: var(--accent-2); font: 700 17px var(--mono); }
+
+    .two { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .list { margin: 0; padding: 0; list-style: none; display: grid; gap: 14px; }
+    .list li { display: grid; grid-template-columns: 26px 1fr; gap: 10px; }
+    .list li::before { content: "✓"; color: var(--ok); font-weight: 700; }
+    .list strong { color: var(--text); }
+    .list span { color: var(--dim); }
+
+    .list.ideas li::before { content: "→"; color: var(--accent-2); }
+    .support { display: flex; flex-direction: column; gap: 14px; justify-content: center; align-items: flex-start; }
+    .support p { margin: 0; }
+
+    .verify { display: grid; gap: 10px; margin-top: 4px; }
+    .verify .row { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
+    .verify .label { width: 120px; color: var(--dim); font-size: 14px; }
+    code, .code {
+      font: 13px var(--mono); color: var(--accent-2);
+      background: #0f1014; border: 1px solid var(--line); border-radius: 7px; padding: 3px 8px;
+    }
+    .verify code { word-break: break-all; }
+    button.copy { font: 13px var(--sans); color: var(--text); background: transparent; border: 1px solid var(--line); border-radius: 7px; padding: 3px 10px; cursor: pointer; }
+    button.copy:hover { background: var(--card); }
+
+    ol.steps { margin: 0; padding: 0; list-style: none; counter-reset: s; display: grid; gap: 16px; }
+    ol.steps li { counter-increment: s; display: grid; grid-template-columns: 38px 1fr; gap: 14px; }
+    ol.steps li::before {
+      content: counter(s); width: 34px; height: 34px; display: grid; place-items: center;
+      border-radius: 50%; background: #1f2a3f; color: var(--accent-2); font-weight: 700;
+    }
+    ol.steps b { color: var(--text); }
+    ol.steps p { margin: 2px 0 0; color: var(--dim); }
+
+    details { padding: 16px 20px; margin-bottom: 10px; background: var(--card); border: 1px solid var(--line); border-radius: 12px; }
+    summary { cursor: pointer; font-weight: 600; }
+    details p { margin: 10px 0 0; color: var(--dim); }
+
+    footer { padding: 36px 0 48px; border-top: 1px solid var(--line); color: var(--dim); font-size: 13.5px; }
+    footer p { margin: 4px 0; }
+
+    @media (max-width: 860px) {
+      .hero .wrap, .two { grid-template-columns: 1fr; }
+      .grid { grid-template-columns: 1fr 1fr; }
+      nav.links { display: none; }
+    }
+    @media (max-width: 560px) {
+      .grid { grid-template-columns: 1fr; }
+      .hero { padding-top: 28px; }
+      .verify .label { width: 100%; }
+    }
+  </style>
+</head>
+<body>
+
+  <header class="top">
+    <div class="wrap">
+      <a class="brand" href="#">
+        <svg viewBox="0 0 64 64" aria-hidden="true">
+          <defs><linearGradient id="lg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#7cc0ff"/><stop offset="1" stop-color="#2a68ee"/></linearGradient></defs>
+          <path d="M32 4 57 18v28L32 60 7 46V18z" fill="url(#lg)"/>
+          <path d="M38 24 28 32l10 8" fill="none" stroke="#0c0d10" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        Cobalto
+      </a>
+      <nav class="links" aria-label="Secciones">
+        <a href="#funciones">Qué incluye</a>
+        <a href="#seguridad">Seguridad</a>
+        <a href="#instalar">Cómo instalar</a>
+        <a href="#preguntas">Preguntas</a>
+        <a href="#apoyar" id="nav-apoyar" hidden>Apoyar</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <!-- Portada -->
+    <div class="hero">
+      <div class="wrap">
+        <div>
+          <span class="eyebrow">Gratis · Código abierto · Windows 10 y 11</span>
+          <h1>Un editor de código <span>oscuro, liviano</span> y listo para ejecutar.</h1>
+          <p class="lead">Escribe Python y JavaScript, ejecútalos con un botón y mira el resultado al lado. Con terminal, búsqueda en toda tu carpeta y cuatro temas de color.</p>
+          <div class="cta">
+            <a class="btn primary" id="download" href="#instalar" aria-disabled="true">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v11m0 0-4.5-4.5M12 15l4.5-4.5M5 19.5h14"/></svg>
+              <span id="download-text">Descargar para Windows</span>
+            </a>
+            <a class="btn ghost" href="#seguridad">¿Es seguro?</a>
+          </div>
+          <p class="meta" id="download-meta">Versión <span class="ver">0.2.0</span> · instalador de Windows (.exe)</p>
+        </div>
+
+        <div>
+          <div class="mock" aria-hidden="true">
+            <div class="bar">
+              <svg viewBox="0 0 64 64"><path d="M32 4 57 18v28L32 60 7 46V18z" fill="#3d9bff"/><path d="M38 24 28 32l10 8" fill="none" stroke="#0c0d10" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              <i></i><i></i><i></i>
+              <span class="pill">hola.py — Cobalto</span>
+            </div>
+            <div class="body">
+              <div class="rail"><b></b><b></b><b></b><b></b></div>
+              <div>
+                <div class="tabs"><span class="on">hola.py</span><span>tareas.js</span></div>
+<pre><span class="n">1</span><span class="c"># Mi primer programa</span>
+<span class="n">2</span>nombre = <span class="f">input</span>(<span class="s">"¿Cómo te llamas? "</span>)
+<span class="n">3</span><span class="f">print</span>(<span class="s">"Hola,"</span>, nombre)
+<span class="n">4</span>
+<span class="n">5</span><span class="k">for</span> i <span class="k">in</span> <span class="f">range</span>(<span class="s">3</span>):
+<span class="n">6</span>    <span class="f">print</span>(<span class="s">"Cobalto funciona"</span>, i)</pre>
+                <div class="out"><em>▶ python hola.py</em><br>¿Cómo te llamas? Ana<br>Hola, Ana<br><strong>✓ Terminó sin errores</strong></div>
+              </div>
+            </div>
+          </div>
+          <p class="caption">Ilustración de la interfaz</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Funciones -->
+    <section id="funciones">
+      <div class="wrap">
+        <h2>Lo que necesitas para programar</h2>
+        <p class="sub">Cobalto usa Monaco, el mismo motor de texto de código abierto que hay dentro de otros editores conocidos, con colores y una interfaz propios.</p>
+        <div class="grid">
+          <div class="card"><div class="ico">▶</div><h3>Ejecuta con F5</h3><p>Python y JavaScript corren directo desde el editor. Si tu programa pide algo con <code>input()</code>, lo respondes ahí mismo. Las páginas HTML se abren en tu navegador.</p></div>
+          <div class="card"><div class="ico">&gt;_</div><h3>Terminal incluida</h3><p>Una terminal simple abajo, que parte en tu carpeta, para comandos como <code>pip install</code> o <code>git status</code>.</p></div>
+          <div class="card"><div class="ico">⌕</div><h3>Búsqueda en la carpeta</h3><p>Encuentra una palabra en todos los archivos de tu proyecto y salta directo a la línea con un clic.</p></div>
+          <div class="card"><div class="ico">◐</div><h3>Cuatro temas</h3><p>Cobalto, Medianoche, Grafito y Claro. Cambias con un clic y se recuerda para la próxima vez.</p></div>
+          <div class="card"><div class="ico">↺</div><h3>Vuelve donde lo dejaste</h3><p>Al abrir, recupera tu carpeta y los archivos que tenías abiertos. Con el autoguardado, tampoco pierdes cambios.</p></div>
+          <div class="card"><div class="ico">◇</div><h3>Liviano y sin cuenta</h3><p>No necesitas registrarte ni iniciar sesión. Lo instalas y lo abres.</p></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Seguridad -->
+    <section id="seguridad">
+      <div class="wrap">
+        <h2>¿Es seguro? Compruébalo tú mismo</h2>
+        <p class="sub">Cobalto es un programa nuevo, así que no te pedimos que confíes a ciegas. Estas son las formas de revisarlo antes de instalar.</p>
+        <div class="two">
+          <ul class="list">
+            <li><div><strong>Código abierto.</strong><br><span>Todo el código está en GitHub. Cualquiera puede leerlo y ver qué hace.</span></div></li>
+            <li><div><strong>Sin recopilar datos.</strong><br><span>El editor no envía tus archivos ni tu información a internet. (Los programas que tú ejecutes sí pueden usar internet, como cualquier programa.)</span></div></li>
+            <li><div><strong>Sin cuentas ni anuncios.</strong><br><span>No hay registro, publicidad ni versiones de pago.</span></div></li>
+          </ul>
+          <div class="card">
+            <h3>Verifica tu descarga</h3>
+            <div class="verify">
+              <div class="row"><span class="label">Análisis antivirus</span><span id="vt">Se agrega al publicar la versión.</span></div>
+              <div class="row"><span class="label">Huella SHA-256</span><span id="sha">Se agrega al publicar la versión.</span></div>
+              <p style="margin:6px 0 0;color:var(--dim);font-size:14px">Para comprobar la huella de tu archivo, abre una terminal en la carpeta de descargas y escribe:<br><code>certutil -hashfile Cobalto-Setup-<span class="ver">0.2.0</span>.exe SHA256</code><br>Si el resultado es igual al de arriba, el archivo es el original.</p>
+            </div>
+          </div>
+        </div>
+        <p class="sub" style="margin:28px 0 0">Una nota honesta: los programas nuevos a veces son marcados por error por algún antivirus (un “falso positivo”). Por eso publicamos el análisis completo, para que veas el detalle y decidas con información.</p>
+      </div>
+    </section>
+
+    <!-- Instalar -->
+    <section id="instalar">
+      <div class="wrap">
+        <h2>Cómo instalar</h2>
+        <p class="sub">Te lleva menos de un minuto.</p>
+        <ol class="steps">
+          <li><div><b>Descarga el instalador.</b><p>Usa el botón de arriba. Es un archivo que se llama <code>Cobalto-Setup-<span class="ver">0.2.0</span>.exe</code>.</p></div></li>
+          <li><div><b>Ábrelo.</b><p>Si Windows muestra “Windows protegió tu PC”, mira la primera pregunta de más abajo: explica por qué pasa y qué hacer.</p></div></li>
+          <li><div><b>Elige la carpeta y termina.</b><p>Se crea un acceso directo en tu escritorio y en el menú Inicio.</p></div></li>
+          <li><div><b>Para ejecutar Python,</b> <p>necesitas tener Python instalado (python.org, marcando “Add Python to PATH”). JavaScript funciona sin instalar nada más.</p></div></li>
+        </ol>
+      </div>
+    </section>
+
+    <!-- Preguntas -->
+    <section id="preguntas">
+      <div class="wrap">
+        <h2>Preguntas frecuentes</h2>
+        <p class="sub">Lo que más se pregunta antes de instalar.</p>
+        <details>
+          <summary>Windows dice “Windows protegió tu PC”. ¿Qué hago?</summary>
+          <p>Ese aviso (SmartScreen) aparece con programas nuevos o sin firma digital, y Cobalto todavía no la tiene. Si descargaste el instalador desde el repositorio oficial de Cobalto y la huella SHA-256 coincide con la de esta página, puedes continuar: toca “Más información” y luego “Ejecutar de todas formas”. Si algo no coincide, no lo ejecutes.</p>
+        </details>
+        <details>
+          <summary>¿Funciona en Mac, Linux o celular?</summary>
+          <p>Por ahora el instalador es solo para Windows 10 y 11.</p>
+        </details>
+        <details>
+          <summary>¿Por qué mi antivirus lo marcó?</summary>
+          <p>Los programas nuevos, que casi nadie ha descargado todavía, a veces son marcados por precaución aunque no tengan nada malo. Revisa el análisis publicado y la huella del archivo. Si crees que es un error del antivirus, puedes enviarles el archivo para que lo revisen.</p>
+        </details>
+        <details>
+          <summary>¿Cobalto es un producto de Microsoft?</summary>
+          <p>No. Cobalto es un proyecto independiente. Usa Monaco Editor, un componente de código abierto con licencia MIT, y no tiene relación con Microsoft ni con Visual Studio Code.</p>
+        </details>
+        <details>
+          <summary>¿Cuánto cuesta?</summary>
+          <p>Nada. Es gratis y de código abierto bajo licencia MIT.</p>
+        </details>
+      </div>
+    </section>
+
+    <!-- Apoyo (se muestra solo cuando configuras el link de donación) -->
+    <section id="apoyar" hidden>
+      <div class="wrap">
+        <h2>Apoya el desarrollo de Cobalto</h2>
+        <p class="sub">Cobalto es gratis y va a seguir siéndolo. Si te sirve y quieres que siga creciendo, puedes ayudar con una donación voluntaria.</p>
+        <div class="two">
+          <div class="card">
+            <h3>En qué ayuda</h3>
+            <p>Más tiempo para arreglar errores y agregar funciones. Algunas ideas en las que me gustaría trabajar:</p>
+            <ul class="list ideas" style="margin-top:14px">
+              <li><div><span>Arrastrar y soltar archivos y carpetas dentro del editor.</span></div></li>
+              <li><div><span>Vista previa de páginas HTML dentro de la propia app.</span></div></li>
+              <li><div><span>Más temas de color y más lenguajes para ejecutar.</span></div></li>
+            </ul>
+          </div>
+          <div class="card support">
+            <h3>Una donación es un gesto voluntario</h3>
+            <p style="color:var(--dim)">No es una compra ni asegura que se agregue una función en particular. Cobalto sigue siendo gratis para todos, dones o no.</p>
+            <a class="btn primary" id="donate" href="#apoyar" target="_blank" rel="noopener noreferrer"><span id="donate-text">Hacer una donación</span></a>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="wrap">
+      <p><strong>Cobalto</strong> · Versión <span class="ver">0.2.0</span> · Licencia MIT</p>
+      <p>Cobalto es un proyecto independiente y no es un producto de Microsoft. Usa <a href="https://microsoft.github.io/monaco-editor/" rel="noopener">Monaco Editor</a> (licencia MIT).</p>
+    </div>
+  </footer>
+
+  <script>
+    // ----------------------------------------------------------------
+    // CONFIGURACIÓN: cuando publiques la versión, cambia SOLO estos datos.
+    // ----------------------------------------------------------------
+    const CONFIG = {
+      repo: 'TU-USUARIO/cobalto',  // tu usuario de GitHub y el nombre del repositorio
+      version: '0.2.0',            // la misma versión de package.json
+      sha256: '',                  // pega aquí la huella SHA-256 del instalador
+      virustotal: '',              // pega aquí el link del análisis de VirusTotal
+      donate: '',                  // (opcional) link de donación; mientras esté vacío, la sección no se muestra
+      donateName: ''               // (opcional) nombre de la plataforma, por ejemplo 'Ko-fi'
+    };
+
+    (function () {
+      const ready = CONFIG.repo && !CONFIG.repo.includes('TU-USUARIO');
+      const btn = document.getElementById('download');
+      const text = document.getElementById('download-text');
+
+      document.querySelectorAll('.ver').forEach((n) => { n.textContent = CONFIG.version; });
+
+      if (ready) {
+        const base = 'https://github.com/' + CONFIG.repo + '/releases';
+        btn.href = base + '/latest/download/Cobalto-Setup-' + CONFIG.version + '.exe';
+        btn.removeAttribute('aria-disabled');
+        text.textContent = 'Descargar para Windows';
+        document.getElementById('download-meta').innerHTML =
+          'Versión ' + CONFIG.version + ' · <a href="' + base + '">ver todas las versiones</a>';
+      } else {
+        text.textContent = 'Próximamente';
+        btn.addEventListener('click', (e) => e.preventDefault());
+      }
+
+      if (CONFIG.virustotal.startsWith('https://')) {
+        const a = document.createElement('a');
+        a.href = CONFIG.virustotal; a.rel = 'noopener'; a.textContent = 'Ver el análisis en VirusTotal';
+        document.getElementById('vt').replaceChildren(a);
+      }
+
+      if (CONFIG.donate.startsWith('https://')) {
+        document.getElementById('donate').href = CONFIG.donate;
+        if (CONFIG.donateName) document.getElementById('donate-text').textContent = 'Donar en ' + CONFIG.donateName;
+        document.getElementById('apoyar').hidden = false;
+        document.getElementById('nav-apoyar').hidden = false;
+      }
+
+      if (/^[a-fA-F0-9]{64}$/.test(CONFIG.sha256)) {
+        const code = document.createElement('code');
+        code.textContent = CONFIG.sha256.toLowerCase();
+        const copy = document.createElement('button');
+        copy.className = 'copy'; copy.type = 'button'; copy.textContent = 'Copiar';
+        copy.addEventListener('click', async () => {
+          try { await navigator.clipboard.writeText(CONFIG.sha256.toLowerCase()); copy.textContent = 'Copiado'; }
+          catch (_) { copy.textContent = 'Selecciónalo y copia'; }
+          setTimeout(() => { copy.textContent = 'Copiar'; }, 1800);
+        });
+        document.getElementById('sha').replaceChildren(code, copy);
+      }
+    })();
+  </script>
+</body>
+</html>

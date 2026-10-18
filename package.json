@@ -1,0 +1,62 @@
+{
+  "name": "cobalto-editor",
+  "productName": "Cobalto",
+  "version": "0.2.0",
+  "description": "Editor de código oscuro y liviano, con ejecución de Python y JavaScript.",
+  "main": "main.js",
+  "author": "Cobalto",
+  "license": "MIT",
+  "scripts": {
+    "start": "electron .",
+    "start:safe": "electron . --disable-gpu",
+    "dist": "electron-builder --win nsis --publish never"
+  },
+  "dependencies": {
+    "monaco-editor": "0.52.2"
+  },
+  "devDependencies": {
+    "electron": "^33.2.0",
+    "electron-builder": "^25.1.8"
+  },
+  "build": {
+    "appId": "cl.cobalto.editor",
+    "productName": "Cobalto",
+    "copyright": "Copyright © 2026 Cobalto",
+    "directories": {
+      "output": "dist",
+      "buildResources": "build"
+    },
+    "asar": true,
+    "files": [
+      "main.js",
+      "preload.js",
+      "renderer/**/*",
+      "package.json",
+      "node_modules/monaco-editor/min/**/*",
+      "node_modules/monaco-editor/LICENSE*",
+      "!node_modules/monaco-editor/esm/**",
+      "!node_modules/monaco-editor/dev/**",
+      "!node_modules/monaco-editor/min-maps/**"
+    ],
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "icon": "build/icon.ico",
+      "artifactName": "Cobalto-Setup-${version}.exe"
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "Cobalto"
+    }
+  }
+}
